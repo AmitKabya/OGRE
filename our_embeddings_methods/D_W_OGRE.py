@@ -635,12 +635,12 @@ def main_D_W_OGRE(name, G, initial_method, method, initial, dim, params, choose=
         if initial_method == "GF":
             my_iter = params["max_iter"]
             params["max_iter"] = 1500
-            _, dict_projections, _ = final(sub_G, initial_method, params)
+            _, dict_projections, _ = final(name, sub_G, initial_method, params)
             params["max_iter"] = my_iter
         elif initial_method == "GCN":
             _, dict_projections, _ = final(name, sub_G, initial_method, params, file_tags)
         else:
-            _, dict_projections, _ = final(sub_G, initial_method, params)
+            _, dict_projections, _ = final(name, sub_G, initial_method, params)
         neighbors_dict = create_dict_neighbors(G)
         set_nodes_no_proj = set_G_nodes - set_proj_nodes
         # create dicts of connections
@@ -670,18 +670,18 @@ def main_D_W_OGRE(name, G, initial_method, method, initial, dim, params, choose=
                                                         dict_enode_enode_in, set_nodes_no_proj, 0.01, dim, G)
 
         print("The number of nodes that aren't in the final projection:", len(set_no_proj))
-        if len(set_n_e) != 0:
-            set_n_e_sub_g = nx.subgraph(G, list(set_n_e))
+        if len(set_no_proj) != 0:
+            set_n_e_sub_g = nx.subgraph(G, list(set_no_proj))
             if initial_method == "GCN":
                 _, projections, _ = final(name, set_n_e_sub_g, initial_method, params, file_tags=file_tags)
             elif initial_method == "HOPE":
-                if len(set_n_e) < int(dim/2):
+                if len(set_no_proj) < int(dim/2):
                     params = {"dimension": dim, "walk_length": 80, "num_walks": 16, "workers": 2}
-                    _, projections, _ = final(set_n_e_sub_g, "node2vec", params)
+                    _, projections, _ = final(name, set_n_e_sub_g, "node2vec", params)
                 else:
-                    _, projections, _ = final(set_n_e_sub_g, initial_method, params)
+                    _, projections, _ = final(name, set_n_e_sub_g, initial_method, params)
             else:
-                _, projections, _ = final(set_n_e_sub_g, initial_method, params)
+                _, projections, _ = final(name, set_n_e_sub_g, initial_method, params)
         else:
             projections = {}
         z = {**final_dict_projections, **projections}
@@ -693,6 +693,3 @@ def main_D_W_OGRE(name, G, initial_method, method, initial, dim, params, choose=
         list_dicts.append(z)
 
     return list_dicts, times, list_initial_proj_nodes
-
-
-
