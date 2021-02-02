@@ -51,29 +51,29 @@ This repo contains source code of our three suggested embedding algorithms for l
 - In order to calculate the embedding, you first must have an edge list file:
 "datasets/name_of_dataset.txt" - An edge list txt file. If the graph is unweighted it consists of 2 columns: source, target (with no title, source and target share an edge).
 If the graph is weighted, it consists of 3 columns: source target weight. 
-Example for unweighted graph:
-1 2 
-2 3
-1 4 
-1 3 
-Example for weighted graph:
-1 2 3
-1 3 0.3
-1 4 4.5
-2 4 0.98
+Example for unweighted graph: <br>
+1 2 <br>
+2 3 <br>
+1 4 <br>
+1 3 <br>
+Example for weighted graph: <br>
+1 2 3 <br>
+1 3 0.3 <br>
+1 4 4.5 <br>
+2 4 0.98 <br>
 You can see examples for this format in `datasets` directory.
 
 Note that in the end one must have a networkx graph, so you can change the data loader function as you want (adjusting to your file format), but remember a networkx graph is requierd in the end.
-- If you want to peform vertex classification task, you must have labels file:
-"labels/name_of_dataset_tags.txt" - A txt file which consists of 2 columns: node, label (no title). Notice all nodes must have labels!
-Exaple:
-1 0
-2 0
-3 1
-4 2
+- If you want to peform vertex classification task, you must have labels file: <br>
+"labels/name_of_dataset_tags.txt" - A txt file which consists of 2 columns: node, label (no title). Notice all nodes must have labels! <br>
+Example: <br>
+1 0 <br>
+2 0 <br>
+3 1 <br>
+4 2 <br>
 You can see examples for this format in `labels` directory.
-- If you want to perform link prediction task, you must have non edges file:
-"evaluation_tasks/non_edges_{name_of_dataset}" - A csv file which consists of two columns: node1, node2 ; where there is no edge between them (again no title).
+- If you want to perform link prediction task, you must have non edges file: <br>
+"evaluation_tasks/non_edges_{name_of_dataset}" - A csv file which consists of two columns: node1, node2 ; where there is no edge between them (again no title). <br>
 In order to produce such file, you can go to `evaluation_tasks -> calculate_non_edges.py` , and follow the instructions there.
 
 ### How to run?
@@ -108,4 +108,3 @@ Line 107: export_time - Export a csv file with running times of each method acco
 Lines 123-130- Link prediction task: A csv file of non edges is needed (as explained above), you can see comments in the code. For more details you can go to
 evaluation_tasks -> link_prediction.py .
 Lines 132-136- Vertex classification task: You can see comments in the code. For more details you can go to evaluation_tasks -> node_classification.py .
-
