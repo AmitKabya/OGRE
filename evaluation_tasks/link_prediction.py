@@ -267,7 +267,7 @@ def lp_mission(key, number_true_false, z, edges, non_edges, ratio_arr, rounds, n
     return dict_initial
 
 
-def final_link_prediction(dict_all_embeddings, params_lp, file):
+def final_link_prediction(dict_all_embeddings, params_lp, file, mapping=None):
     """
     Link Prediction Task
     :param dict_all_embeddings: Dictionary with all dict embeddings for all applied embedding method
