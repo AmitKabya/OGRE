@@ -3,8 +3,6 @@ Our suggested static embedding methods full calculation.
 """
 
 import math
-from utils import *
-from state_of_the_art.state_of_the_art_embedding import *
 from OGRE import *
 from D_W_OGRE import main_D_W_OGRE
 import time
@@ -190,7 +188,7 @@ def main_static(name, method, initial_method, G, initial, dim, params, choose="d
                                                                    file_tags=file_tags, F=F)
 
     elif method == "OGRE":
-        list_dicts, times, list_initial_proj_nodes = main_OGRE(name, method, initial_method, G, initial, dim, params,
+        list_dicts, times, list_initial_proj_nodes = main_OGRE(name, initial_method, G, initial, dim, params,
                                                                choose="degrees", epsilon=epsilon, file_tags=file_tags, 
                                                                F=F)
     else:
@@ -222,4 +220,3 @@ Example code to calculate embedding can be seen in the file- evaluation_tasks/ca
 #                                                           choose=choose, file_tags=file_tags)
 # SE.save_embedding(embeddings_path)    # save the embedding
 # list_dict_embedding = SE.list_dicts_embedding    # the embedding saved as a dict, this is list of dicts, each dict for different initial size
-
