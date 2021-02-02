@@ -104,14 +104,14 @@ if the embeddings is all you wanted you can stop here. Otherwise, here are funct
 applying Link Prediction and Node Classification Tasks.
 """
 
-# evaluate running time
-export_time(z, DATASET["name"])
-
 # where to save resuts files
 if DATASET["choose"] == "degrees":
     save = "files_degrees"
 else:
     save = "files_k_core"
+
+# evaluate running time
+export_time(z, DATASET["name"], save)
     
 if DATASET["name"] == "Yelp":
     mapping = {i: n for i,n in zip(range(G.number_of_nodes()), list(G.nodes()))}
