@@ -282,41 +282,41 @@ def save_embedding_state_of_the_art(path, dict_embedding, name, initial_method):
 
 
 def final(name, G, method_name, params, file_tags=None):
-"""
-Final function to apply state-of-the-art embedding methods
-:param G: Graph to embed
-:param method_name: state-of-the-art embedding algorithm
-:param params: Parameters dictionary according to the embedding method
-:return: Embedding matrix, embedding dict and running time
-"""
-if method_name == "HOPE":
-    t = time()
-    embedding = HOPE(params, method_name, G)
-    projections, S, _, X1, X2 = embedding.learn_embedding()
-    X = embedding.get_embedding()
-    elapsed_time = time() - t
-    return X, projections, elapsed_time
-elif method_name == "node2vec":
-    t = time()
-    embedding = NODE2VEC(params, method_name, G)
-    embedding.learn_embedding()
-    X, projections = embedding.get_embedding()
-    elapsed_time = time() - t
-    return X, projections, elapsed_time
-elif method_name == "GF":
-    t = time()
-    embedding = GraphFactorization(params, method_name, G)
-    _, _, projections = embedding.learn_embedding()
-    X = embedding.get_embedding()
-    elapsed_time = time() - t
-    return X, projections, elapsed_time
-elif method_name == "GCN":
-    t = time()
-    embedding = GCNModel(name, params, method_name, G, file_tags)
-    projections = embedding.learn_embedding()
-    elapsed_time = time() - t
-    return None, projections, elapsed_time
-else:
-    print("Method is not valid. Valid methods are: node2vec, hope, graph_factorization")
-    return None, None, None
+    """
+    Final function to apply state-of-the-art embedding methods
+    :param G: Graph to embed
+    :param method_name: state-of-the-art embedding algorithm
+    :param params: Parameters dictionary according to the embedding method
+    :return: Embedding matrix, embedding dict and running time
+    """
+    if method_name == "HOPE":
+        t = time()
+        embedding = HOPE(params, method_name, G)
+        projections, S, _, X1, X2 = embedding.learn_embedding()
+        X = embedding.get_embedding()
+        elapsed_time = time() - t
+        return X, projections, elapsed_time
+    elif method_name == "node2vec":
+        t = time()
+        embedding = NODE2VEC(params, method_name, G)
+        embedding.learn_embedding()
+        X, projections = embedding.get_embedding()
+        elapsed_time = time() - t
+        return X, projections, elapsed_time
+    elif method_name == "GF":
+        t = time()
+        embedding = GraphFactorization(params, method_name, G)
+        _, _, projections = embedding.learn_embedding()
+        X = embedding.get_embedding()
+        elapsed_time = time() - t
+        return X, projections, elapsed_time
+    elif method_name == "GCN":
+        t = time()
+        embedding = GCNModel(name, params, method_name, G, file_tags)
+        projections = embedding.learn_embedding()
+        elapsed_time = time() - t
+        return None, projections, elapsed_time
+    else:
+        print("Method is not valid. Valid methods are: node2vec, hope, graph_factorization")
+        return None, None, None
 
