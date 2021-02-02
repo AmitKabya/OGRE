@@ -2,6 +2,9 @@
 Implementation of OGRE approach, as explained in the pdf file which is in our github page.
 """
 
+from state_of_the_art.state_of_the_art_embedding import *
+from utils import *
+import time
 import numpy as np
 import heapq
 
@@ -195,12 +198,12 @@ def main_OGRE(name, initial_method, G, initial, dim, params, choose="degrees", e
         if initial_method == "GF":
             my_iter = params["max_iter"]
             params["max_iter"] = 1500
-            _, dict_projections, _ = final(sub_G, initial_method, params)
+            _, dict_projections, _ = final(name, sub_G, initial_method, params)
             params["max_iter"] = my_iter
         elif initial_method == "GCN":
             _, dict_projections, _ = final(name, sub_G, initial_method, params, file_tags)
         else:
-            _, dict_projections, _ = final(sub_G, initial_method, params)
+            _, dict_projections, _ = final(name, sub_G, initial_method, params)
         final_dict_enode_proj, set_n_e = final_function_OGRE(dict_projections, dict_node_enode,
                                                              dict_node_node, dict_enode_enode, set_nodes_no_proj, 0.01,
                                                              dim,
@@ -215,11 +218,11 @@ def main_OGRE(name, initial_method, G, initial, dim, params, choose="degrees", e
             elif initial_method == "HOPE":
                 if len(set_n_e) < int(dim / 2):
                     params = {"dimension": dim, "walk_length": 80, "num_walks": 16, "workers": 2}
-                    _, projections, _ = final(set_n_e_sub_g, "node2vec", params)
+                    _, projections, _ = final(name, set_n_e_sub_g, "node2vec", params)
                 else:
-                    _, projections, _ = final(set_n_e_sub_g, initial_method, params)
+                    _, projections, _ = final(name, set_n_e_sub_g, initial_method, params)
             else:
-                _, projections, _ = final(set_n_e_sub_g, initial_method, params)
+                _, projections, _ = final(name, set_n_e_sub_g, initial_method, params)
         else:
             projections = {}
         z = {**final_dict_enode_proj, **projections}
@@ -231,5 +234,3 @@ def main_OGRE(name, initial_method, G, initial, dim, params, choose="degrees", e
         list_dicts.append(z)
 
     return list_dicts, times, list_initial_proj_nodes
-
-
