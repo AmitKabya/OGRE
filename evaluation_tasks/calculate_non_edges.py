@@ -8,9 +8,8 @@ from eval_utils import load_graph
 import os
 import itertools as IT
 import csv
-import json
 import random
-import networkx as nx
+import __init__
 
 name1 = "DBLP"
 name2 = "Cora"
