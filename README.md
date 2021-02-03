@@ -90,21 +90,22 @@ there and see both instructions and code.
 the ones with highest k-core score. (string)
 - "s_a": True if you also want to calculate state-of-the-art embeddings (node2vec/GF/HOPE/GCN), else False.
 Params for OGRE:
-- epsilon: Weight to the second order neighbours embedding. For more details you can go to the implementation- our_embedding_methods -> OGRE.py (float).
+- epsilon: Weight to the second order neighbours embedding. For more details you can go to the implementation- `our_embedding_methods -> OGRE.py` (float).
 Params for DOGRE/WOGRE:
-- "regu_val": Regularization value for regression, only for DOGRE/WOGRE. For more details you can go to the implementation- our_embedding_methods -> D_W_OGRE.py (float).
+- "regu_val": Regularization value for regression, only for DOGRE/WOGRE. For more details you can go to the implementation- `our_embedding_methods -> D_W_OGRE.py` (float).
 - "weighted_reg": True for weighted regression, else False.
 If the initial embedding method is GCN and/or a vertex classification task is applied, a labels file is also necessary:
 - "label_file": path and name (together), so it can be read directly.
 2. methods_ : List of our suggested embedding methods (OGRE/DOGRE/WOGRE) with whom you want to embed the given graph. 
 3. initial_methods_ : List of state-of-the-art embedding methods (node2vec/GF/HOPE/GCN) with whom the initial core will be embed.
 4. params_dict_ : Parameters for state-of-the-art embeddings. These are the optimal ones (according to their papers). For more details you can go to- 
-state_of_the_art -> state_of_the_art_embedding.py
-5. save_: True if you want to save the embedding in a .npy format, else False.
-Once you have that, you can run "calculate_static_embeddings" function to get the embeddings as dictionaries. You can see function implementation and output format in 
-evaluation_tasks -> eval_utils.py . 
-If you only want the embedding of the graph, you can stop here. If you also want to apply link prediction or vertex classification task you should continue.
-Line 107: export_time - Export a csv file with running times of each method according to the initial core size.
+`state_of_the_art -> state_of_the_art_embedding.py`
+5. save_: True if you want to save the embedding in a .npy format, else False. 
+
+Once you have all the above, you can run "calculate_static_embeddings" function to get the embeddings as dictionaries. You can see function implementation and output format in 
+`evaluation_tasks -> eval_utils.py`. <br>
+If you only want the embedding of the graph, you can stop here. If you also want to apply link prediction or vertex classification task you should continue. <br>
+Line 107: export_time - Export a csv file with running times of each method according to the initial core size. <br>
 Lines 123-130- Link prediction task: A csv file of non edges is needed (as explained above), you can see comments in the code. For more details you can go to
-evaluation_tasks -> link_prediction.py .
-Lines 132-136- Vertex classification task: You can see comments in the code. For more details you can go to evaluation_tasks -> node_classification.py .
+`evaluation_tasks -> link_prediction.py`. <br>
+Lines 132-136- Vertex classification task: You can see comments in the code. For more details you can go to `evaluation_tasks -> node_classification.py`.
