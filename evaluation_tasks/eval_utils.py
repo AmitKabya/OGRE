@@ -3,8 +3,6 @@ import csv
 from our_embeddings_methods.static_embeddings import *
 from state_of_the_art.state_of_the_art_embedding import *
 import networkx as nx
-import math
-import scipy as sp
 from plots_utils import choose_max_initial, all_test_by_one_chosen_initial
 import os
 import pickle
@@ -150,8 +148,8 @@ def divide_to_keys(dict_all_embeddings):
     keys_state_of_the_art = []
     keys = list(dict_all_embeddings.keys())
     for key in keys:
-        value = dict_all_embeddings[key]
-        if len(value) > 3:
+        # value = dict_all_embeddings[key]
+        if " + " in key:
             keys_ours.append(key)
         else:
             keys_state_of_the_art.append(key)
@@ -370,8 +368,8 @@ def export_results_lp_nc(dict_all_embeddings, dict_mission, our_initial, n):
 
     for key in keys:
         if key in keys_ours:
-            embd_algo = key.split(" + ")[0]
-            regression = key.split(" + ")[1]
+            embd_algo = key.split(" + ")[1]
+            regression = key.split(" + ")[0]
             initial = our_initial
         else:
             embd_algo = key
@@ -438,4 +436,3 @@ def export_best_results(name, mission, dict_mission, keys_ours_, keys_state_of_t
                 writer.writerow(data)
     except IOError:
         print("I/O error")
-        
