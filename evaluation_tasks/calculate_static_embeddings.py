@@ -65,7 +65,6 @@ from node_classification import *
 from static_embeddings import *
 import csv
 
-
 # initialize important variables / parameters
 DATASET = {"name": "DBLP", "initial_size": [100, 1000], "dim": 128, "is_weighted": False, "choose": "degrees",
            "regu_val": 0, "weighted_reg": False, "s_a": True, "epsilon": 0.1,
@@ -97,7 +96,7 @@ save_ = True
 # calculate dict of embeddings
 z, G, initial_size, list_initial_proj_nodes = calculate_static_embeddings(datasets_path_, embeddings_path_, DATASET,
                                                                           methods_, initial_methods_, params_dict_,
-                                                                          from_files=from_files, save_=save_)
+                                                                          save_=save_)
 
 """
 if the embeddings is all you wanted you can stop here. Otherwise, here are functions to calculate running time, and 
@@ -135,6 +134,3 @@ params_nc_dict = {"rounds": 10, "test_ratio": [0.1, 0.2]}
 dict_nc = final_node_classification(DATASET["name"], z, params_nc_dict, DATASET, mapping=mapping)
 export_results_lp_nc_all(n, save, z, dict_nc, DATASET["initial_size"], DATASET["name"], "Node Classification")
 print("finish node classification")
-
-
-
