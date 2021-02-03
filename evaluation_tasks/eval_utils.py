@@ -1,11 +1,13 @@
+import __init__
 import csv
-from static_embeddings import main_static
+from our_embeddings_methods.static_embeddings import *
 from state_of_the_art.state_of_the_art_embedding import *
 import networkx as nx
 import math
 import scipy as sp
 from plots_utils import choose_max_initial, all_test_by_one_chosen_initial
 import os
+import pickle
 
 
 def add_weights(G):
@@ -436,6 +438,4 @@ def export_best_results(name, mission, dict_mission, keys_ours_, keys_state_of_t
                 writer.writerow(data)
     except IOError:
         print("I/O error")
-
-
-
+        
