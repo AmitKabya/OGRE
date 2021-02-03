@@ -1,13 +1,10 @@
 """
 Create the plots, only when there are files of link prediction and node classification
 """
-
 from plots_utils import *
+from eval_utils import *
 
-# dictionary of important parameter for your dataset. Here are some examples
-DATASET = {"name": "Cora", "label_file": "cora_tags.txt", "initial_embedding_size": [], "dim": 128}
-# DATASET = {"name": "DBLP", "label_file": "dblp_tags.txt", "initial_embedding_size": [], "dim": 128}
-# DATASET = {"name": "Cora", "label_file": "pubmed2_tags.txt", "initial_embedding_size": [], "dim": 128}
+DATASET = {"name": "DBLP", "label_file": "dblp_tags.txt", "initial_embedding_size": [], "dim": 128}
 
 # paths to where the dataset and label file are in
 datasets_path = os.path.join("..", "datasets")
@@ -18,14 +15,14 @@ if DATASET["name"] != "Yelp":
     if G.number_of_nodes() == 0:
         G = nx.read_edgelist(os.path.join(datasets_path, DATASET["name"] + ".txt"), create_using=nx.DiGraph())
 else:
-    with open(os.path.join(path, "yelp_data.p"), 'rb') as f:
+    with open(os.path.join(datasets_path, "yelp_data.p"), 'rb') as f:
         G = pickle.load(f)
     G = add_weights(G)
 n = G.number_of_nodes()
 
 list_keys = []
-methods_ = ["OGRE", "DOGRE", "WOGRE"]
-initial_methods_ = ["node2vec", "HOPE", "GF"]
+methods_ = ["OGRE"]
+initial_methods_ = ["node2vec"]
 methods_mapping = {"OGRE": "OGRE", "DOGRE": "DOGRE", "WOGRE": "WOGRE"}
 for i in initial_methods_:
     for m in methods_:
@@ -50,7 +47,7 @@ Plot Running Time
 """
 
 # read times
-dict_times = read_times_file(DATASET["name"], "files", initial_methods_, methods_mapping)
+dict_times = read_times_file(DATASET["name"], "files_degrees", initial_methods_, methods_mapping)
 
 # colors to plot each method in
 colors = ["indigo", "red", "olivedrab"]
@@ -73,11 +70,6 @@ Link Prediction and Node Classification
 dict_lp, _, initial_size, _, _ = read_results(DATASET["name"], save1, "Link Prediction", initial_methods_, 0.2, methods_mapping)
 dict_nc = read_results(DATASET["name"], save1, "Node Classification", initial_methods_, 0.2, methods_mapping)
 
-# export_best_results(DATASET["name"], "Node Classification", dict_nc, keys_ours, keys_state_of_the_art, [0.1, 0.2, 0.4, 0.7], initial_size,
-#                             ["Micro-F1", "Macro-F1", "AUC"], 1)
-# export_best_results(DATASET["name"], "Link Prediction", dict_nc, keys_ours, keys_state_of_the_art, [0.1, 0.2, 0.4, 0.7], initial_size,
-#                             ["Micro-F1", "Macro-F1", "AUC"], 1)
-
 new_initial = []
 for i in initial_size:
     new_initial.append(i)
@@ -90,8 +82,8 @@ DATASET["initial_embedding_size"] = initial_size
 ONE_TEST_RATIO = 0.2
 
 # lp and nc parameters dictionary
-params_lp_dict = {"number_true_false": 10000, "rounds": 10, "test_ratio": [0.1, 0.2, 0.4, 0.7], "number_of_sub_graphs": 10}
-params_nc_dict = {"rounds": 10, "test_ratio": [0.1, 0.2, 0.4, 0.7]}
+params_lp_dict = {"number_true_false": 10000, "rounds": 10, "test_ratio": [0.1, 0.2], "number_of_sub_graphs": 10}
+params_nc_dict = {"rounds": 10, "test_ratio": [0.1, 0.2]}
 
 plot_test_vs_score_all(DATASET["name"], "Link Prediction", dict_lp, keys_ours, keys_state_of_the_art, params_lp_dict["test_ratio"],
                        DATASET["initial_embedding_size"], mapping, num3, save2)
