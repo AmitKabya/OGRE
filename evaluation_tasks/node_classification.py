@@ -57,8 +57,8 @@ def evaluateNodeClassification(X, Y, test_ratio):
     classif2.fit(X_train, Y_train)
     prediction = classif2.predict(X_test, top_k_list)
     accuracy = accuracy_score(Y_test, prediction)
-    micro = f1_score(Y_test, prediction, average='micro', zero_division=0)
-    macro = f1_score(Y_test, prediction, average='macro', zero_division=0)
+    micro = f1_score(Y_test, prediction, average='micro')
+    macro = f1_score(Y_test, prediction, average='macro')
     auc = roc_auc_score(Y_test, prediction)
     return micro, macro, accuracy, auc
 
