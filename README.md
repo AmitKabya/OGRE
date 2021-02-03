@@ -38,6 +38,10 @@ This repo contains source code of our three suggested embedding algorithms for l
 - matplotlib==3.1.3
 - pandas >= 1.0.5
 
+### Cloning this repo
+
+If this repository is cloned as a pycharm project, one needs to make the following directories as sources directories: `datasets`, `evaluation_tasks`, `labels`, `our_embeddings_methods`, `state_of_the_art`.
+
 ### Datasets:
 - DBLP
 - Pubmed
