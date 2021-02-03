@@ -4,7 +4,8 @@ Plot utils for plotting some important graphs.
 
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-from eval_utils import *
+import os
+import csv
 
 
 # for plots
@@ -27,7 +28,11 @@ def read_results(name, save, mission, initial_methods_, ratio, mapping):
     with open(os.path.join("..", save, "{} {}.csv".format(name, mission))) as csv_file:
         csv_reader = csv.reader(csv_file)
         for row in csv_reader:
-            if row[1] == "embed algo":
+            try:
+                a = row[1]
+            except:
+                continue
+            if a == "embed algo":
                 continue
             else:
                 if row[0] != "":
@@ -255,24 +260,24 @@ def plot_test_vs_score(name, task, score, dict_mission, keys_ours , keys_state_o
         plt.plot(ratio_arr, dict_scores[keys[j]], marker=marker, linestyle=linestyle, markersize=markersize, color=colors[keys[j]])
     if task == "Node Classification":
         if score == "AUC":
-            bottom = 0.45
-            top = 0.65
+            bottom = 0
+            top = 1
         elif score == "Macro-F1":
             bottom = 0
-            top = 0.15
+            top = 1
         else:
             bottom = 0
-            top = 0.35
+            top = 1
     else:
         if score == "AUC":
-            bottom = 0.45
-            top = 0.8
+            bottom = 0
+            top = 1
         elif score == "Macro-F1":
-            bottom = 0.4
-            top = 0.8
+            bottom = 0
+            top = 1
         else:
-            bottom = 0.45
-            top = 0.8
+            bottom = 0
+            top = 1
     plt.ylim(bottom=bottom, top=top)
     plt.legend(keys, loc='best', ncol=3, fontsize='medium')
     plt.title("{} Dataset \n {} Task - {} Score".format(name, task, score))
@@ -316,24 +321,24 @@ def plot_initial_vs_score(name, task, score, dict_mission, keys_ours_, keys_stat
         plt.plot(n, dict_scores[keys_ours_[j]], marker=marker, linestyle=linestyle, markersize=markersize, color=colors[keys_ours_[j]])
     if task == "Node Classification":
         if score == "AUC":
-            bottom = 0.45
-            top = 0.65
+            bottom = 0
+            top = 1
         elif score == "Micro-F1":
             bottom = 0
-            top = 0.4
+            top = 1
         else:
             bottom = 0
-            top = 0.15
+            top = 1
     else:
         if score == "AUC":
-            bottom = 0.4
-            top = 0.8
+            bottom = 0
+            top = 1
         elif score == "Micro-F1":
-            bottom = 0.45
-            top = 0.8
+            bottom = 0
+            top = 1
         else:
-            bottom = 0.3
-            top = 0.8
+            bottom = 0
+            top = 1
     plt.legend(keys_ours_, loc='best', ncol=2, fontsize='medium')
     plt.ylim(bottom=bottom, top=top)
     plt.title("{} Dataset \n {} Task - {} Score".format(name, task, score))
@@ -370,7 +375,7 @@ def read_times_file(name, save, initial_methods_, mapping):
     dict_times = {}
     for m in initial_methods_:
         dict_times.update({m: {}})
-    with open(os.path.join("..", save, "{} times.csv".format(name))) as csv_file:
+    with open(os.path.join("..", save, "{} times_1.csv".format(name))) as csv_file:
         csv_reader = csv.reader(csv_file)
         for row in csv_reader:
             if len(row) == 0:
@@ -444,7 +449,7 @@ def plot_running_time_after_run(name, method, dict_times, initial_size, colors, 
     plt.xlabel("Size of initial embedding")
     plt.ylabel("Running time [seconds]")
     plt.tight_layout()
-    plt.savefig(os.path.join("..", "plots_final", "{} {} running time vs initial.png".format(name, method)))
+    plt.savefig(os.path.join("..", "plots", "{} {} running time vs initial.png".format(name, method)))
 
 
 def plot_running_time_after_run_all(dict_dataset, dict_times, colors, n, i):
