@@ -8,18 +8,18 @@
 OGRE and its variants are fast online two-stages graph embedding algorithms for large graphs. The accuracy of existing embedding, as defined by auxiliary tests, is maximal for a core of high degree vertices. We propose to embed only this core using existing methods (such as node2vec, HOPE, GF, GCN), and then update online the remaining vertices, based on the position of their already embedded neighbors. The position of each new vertex is a combination of its first and second neighbors’ positions. We present three versions of this heuristic:
 
 1. OGRE - a weighted combination approach which assumes an undirected graph, or the undirected graph underlying a directed graph. The position of a new vertex that is inserted to the embedding is calculated by the average embedding of its first and second order neighbours, with epsilon as a hyperparamter representing the importance of the second order neighbours.
-2. DOGRE - a directed regression which assumes a directed graph. The position of a new vertex that is inserted to the embedding is calculated by the average embedding of its first and second order neighbours, where now they have directions - in, out, in-in, in-out, out-in, out-out, and the importance of each of them is determined by the regression.
+2. DOGRE - a directed regression which assumes a directed graph. The position of a new vertex that is inserted to the embedding is calculated by the average embedding of its first and second order neighbours, where now they have directions - in, out, in-in, in-out, out-in, out-out, and the importance of each of them is determined by the regression weights.
 3. WOGRE - a directed weighted regression, very similar to DOGRE. The difference is by the calculation of the parameters, where here we use a little different combination, therefore different regression results. 
 
 ## About This Repo
 This repo contains source code of our three suggested embedding algorithms for large graphs.
 
 ### The Directories:
-- `datasets` - Exmples for datasets
-- `labels` - Examples for labels
+- `datasets` - Examples for datasets files
+- `labels` - Examples for labels files
 - `embeddings_degrees` - Where to save OGRE/DOGRE/WOGRE embeddings in .npy format
 - `embeddings_state_of_the_art` - Where to save state-of-the-art embeddings in .npy format
-- `evaluation_tasks` - Implementation of vetrex classification and link prediction tasks + main file to calculate the embedding and performance (`calculate_static_embeddings.py`).
+- `evaluation_tasks` - Implementation of vetrex classification and link prediction tasks + main file to calculate the embedding and evaluate performance (`calculate_static_embeddings.py`).
 - `files_degrees` - Where to save the results
 - `our_embeddings_methods` - Implementations of our suggested embedding methods - OGRE/DOGRE/WOGRE.
 - `plots` - Examples plots
@@ -49,7 +49,7 @@ If this repository is cloned as a pycharm project, one needs to make the followi
 - Yelp
 - Reddit
 
-`datasets` directory consists of several small datasets. You can find the larger ones in [This Google Drive link](https://drive.google.com/drive/folders/1zycmmDES39zVlbVCYs88JTJ1Wm5FbfLz), taken from [GraphSaint public github repository](https://github.com/GraphSAINT/GraphSAINT). Notice you will have to adjust them to our files format (explained above) or provide a data loader function in order to produce the networkx graph.
+`datasets` directory consists of several small datasets. You can find the larger ones in [This Google Drive link](https://drive.google.com/drive/folders/1zycmmDES39zVlbVCYs88JTJ1Wm5FbfLz), taken from [GraphSaint public github repository](https://github.com/GraphSAINT/GraphSAINT). Notice you will have to adjust them to our files format (will be further explained) or provide a data loader function in order to produce the networkx graph.
 
 ### What files should you have in order to embed your graph?
 - In order to calculate the embedding, you first must have an edge list file:
@@ -68,7 +68,7 @@ Example for weighted graph: <br>
 You can see examples for this format in `datasets` directory.
 
 Note that in the end one must have a networkx graph, so you can change the data loader function as you want (adjusting to your file format), but remember a networkx graph is requierd in the end.
-- If you want to peform vertex classification task, you must have labels file: <br>
+- If you want to peform vertex classification task or GCN initial embedding is used, you must provide labels file: <br>
 "labels/name_of_dataset_tags.txt" - A txt file which consists of 2 columns: node, label (no title). Notice all nodes must have labels! <br>
 Example: <br>
 1 0 <br>
@@ -76,7 +76,7 @@ Example: <br>
 3 1 <br>
 4 2 <br>
 You can see examples for this format in `labels` directory.
-- If you want to perform link prediction task, you must have non edges file: <br>
+- If you want to perform link prediction task, you must provide non edges file: <br>
 "evaluation_tasks/non_edges_{name_of_dataset}" - A csv file which consists of two columns: node1, node2 ; where there is no edge between them (again no title). <br>
 In order to produce such file, you can go to `evaluation_tasks -> calculate_non_edges.py` , and follow the instructions there.
 
@@ -113,3 +113,5 @@ Line 107: export_time - Export a csv file with running times of each method acco
 Lines 123-130- Link prediction task: A csv file of non edges is needed (as explained above), you can see comments in the code. For more details you can go to
 `evaluation_tasks -> link_prediction.py`. <br>
 Lines 132-136- Vertex classification task: You can see comments in the code. For more details you can go to `evaluation_tasks -> node_classification.py`.
+
+If link prediction/vertex classificaion tasks have been performed, one can also plot graphs of scores as function of size of the core, scores as function of test ratio and running time. To do that, toy can go to `evaluation_tasks -> plot_results.py`.
