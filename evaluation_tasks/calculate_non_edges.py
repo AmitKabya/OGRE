@@ -22,7 +22,10 @@ names = [name1]
 datasets_path = os.path.join("..", "datasets")
 labels_path = os.path.join("..", "labels")
 
-# how many false edges do you want to extract? try as large as possible.
+# How many vertices to choose randomaly and from them create false edges. For small datasets (DBLP, Pubmed, Cora) it can be equal
+# to the number of vertices. In large graphs such as Yelp and Reddit, this file may be too large if all false edges are created,
+# therefore one should choose the maximal number of vertices that the csv file with their false edges will be the maximal size as possible.
+# depending on your server memory and cpu.
 number = 15000
 
 for name in names:
