@@ -18,7 +18,7 @@ You can see examples for this format in "datasets" directory.
 
 If you want to peform vertex classification task, you must have labels file:
 "labels/{name_of_dataset}_tags.txt" - A txt file which consists of 2 columns: node, label (no title). Notice all node must have labels!
-Exaple:
+Example:
 1 0
 2 0
 3 1
