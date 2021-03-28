@@ -6,6 +6,8 @@ import networkx as nx
 from plots_utils import choose_max_initial, all_test_by_one_chosen_initial
 import os
 import pickle
+import scipy
+from scipy import io
 
 
 def add_weights(G):
@@ -28,6 +30,12 @@ def load_graph(path, name, is_weighted):
         with open(os.path.join(path, "yelp_data.p"), 'rb') as f:
             G = pickle.load(f)
         G = add_weights(G)
+    elif name == "Youtube" or name == "Flickr":
+        inputFile = os.path.join(path, "{}.mat".format(name))
+        features_struct = scipy.io.loadmat(inputFile)
+        data = scipy.sparse.csr_matrix(features_struct["network"])
+        G = nx.from_scipy_sparse_matrix(data)
+        # no need to add weights, already has
     else:
         if is_weighted:
             G = nx.read_weighted_edgelist(os.path.join(path, name + ".txt"), create_using=nx.DiGraph(),
@@ -37,7 +45,7 @@ def load_graph(path, name, is_weighted):
         else:
             G = nx.read_edgelist(os.path.join(path, name + ".txt"), create_using=nx.DiGraph(), delimiter=",")
             if G.number_of_nodes() == 0:
-                G = nx.read_edgelist(os.path.join(path, name + ".txt"), create_using=nx.DiGraph(), delimiter="")
+                G = nx.read_edgelist(os.path.join(path, name + ".txt"), create_using=nx.DiGraph())
             # put weights equal to 1
             G = add_weights(G)
     return G
