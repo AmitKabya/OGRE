@@ -113,9 +113,9 @@ If the initial embedding method is GCN and/or a vertex classification task is ap
 Once you have all the above, you can run "calculate_static_embeddings" function to get the embeddings as dictionaries. You can see function implementation and output format in 
 `evaluation_tasks -> eval_utils.py`. <br>
 If you only want the embedding of the graph, you can stop here. If you also want to apply link prediction or vertex classification task you should continue. <br>
-Line 107: export_time - Export a csv file with running times of each method according to the initial core size. <br>
-Lines 123-130- Link prediction task: A csv file of non edges is needed (as explained above), you can see comments in the code. For more details you can go to
+Line 122: export_time - Export a csv file with running times of each method according to the initial core size. <br>
+Lines 132-139- Link prediction task: A csv file of non edges is needed (as explained above), you can see comments in the code. For more details you can go to
 `evaluation_tasks -> link_prediction.py`. <br>
-Lines 132-136- Vertex classification task: You can see comments in the code. For more details you can go to `evaluation_tasks -> node_classification.py`.
+Lines 141-145- Vertex classification task: You can see comments in the code. For more details you can go to `evaluation_tasks -> node_classification.py`. Notice that for a multi-label node classification task, you need to add `multi=True` in the `final_node_classification` function.
 
 If link prediction/vertex classificaion tasks have been performed, one can also plot graphs of scores as function of size of the core, scores as function of test ratio and running time. To do that, toy can go to `evaluation_tasks -> plot_results.py`.
