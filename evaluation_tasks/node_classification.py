@@ -5,16 +5,95 @@ Node classification Task For Evaluation
 
 try: import cPickle as pickle
 except: import pickle
+from sklearn.multioutput import MultiOutputClassifier
 from sklearn import model_selection as sk_ms
 from sklearn.multiclass import OneVsRestClassifier as oneVr
 from sklearn.linear_model import LogisticRegression as lr
 from sklearn.metrics import f1_score, accuracy_score, roc_auc_score
+from sklearn.model_selection import GridSearchCV
+from sklearn.preprocessing import MultiLabelBinarizer
+from scipy import sparse
+import scipy
 from state_of_the_art_embedding import *
 
 
 """
-Code for the node classification task as explained in GEM article. This part of the code belongs to GEM.
-For more information, you can go to our github page.
+Code for the node classification task as explained in GEM article. Node classification part of the code belongs to GEM
+[https://github.com/palash1992/GEM]. Multi-label node classification part of the code belongs to NRL [https://github.com/PriyeshV/NRL_Benchmark].
+Notice multi-label node classification may take at least 10-15 minutes for a single run.
+"""
+
+"""
+Multi-label node classification
+"""
+
+def predict_top_k(classifier, X, top_k_list):
+    print("predicting top k")
+    assert X.shape[0] == len(top_k_list)
+    probs = np.asarray(classifier.predict_proba(X))
+    all_labels = []
+    for i, k in enumerate(top_k_list):
+        probs_ = probs[i, :]
+        try:
+            labels = classifier.classes_[probs_.argsort()[-k:]].tolist()
+        except AttributeError:  # for eigenpro
+            labels = probs_.argsort()[-k:].tolist()
+        all_labels.append(labels)
+    print("done predicting")
+    return all_labels
+
+
+def get_classifier_performance(classifer, X_test, y_test, multi_label_binarizer):
+    top_k_list_test = [len(l) for l in y_test]
+    y_test_pred_3d = predict_top_k(classifer, X_test, top_k_list_test)
+    
+    y_test_pred = np.zeros(shape=(y_test.shape[0], y_test.shape[1]))
+    for i in y_test_pred.shape[0]:
+        for j in y_test_pred.shape[1]:
+            y_test_pred[i,j] = y_test_pred_3d[j][i][1]
+    
+    y_test_transformed = multi_label_binarizer.transform(y_test)
+    y_test_pred_transformed = multi_label_binarizer.transform(y_test_pred)
+    
+    micro = f1_score(y_test_transformed, y_test_pred_transformed, average="micro")
+    macro = f1_score(y_test_transformed, y_test_pred_transformed, average="macro")
+    acc = accuracy_score(y_test_transformed, y_test_pred_transformed)
+
+    return micro, macro, acc, 0
+
+
+def sparse_tocoo(Y):
+    temp_y_labels = sparse.csr_matrix(Y)
+    y_labels = [[] for x in range(temp_y_labels.shape[0])]
+    cy =  temp_y_labels.tocoo()
+    for i, j in zip(cy.row, cy.col):
+      y_labels[i].append(j)
+    assert sum(len(l) for l in y_labels) == temp_y_labels.nnz
+    return y_labels
+      
+
+def multi_label_logistic_regression(X, Y, test_ratio):
+    number_of_labels = Y.shape[1]
+    multi_label_binarizer = MultiLabelBinarizer(range(number_of_labels))
+    y_fitted = multi_label_binarizer.fit(Y)
+    X_train, X_test, Y_train, Y_test = sk_ms.train_test_split(X, Y, test_size=test_ratio)
+    lf_classifer = oneVr(lr(solver='lbfgs', max_iter=350000))
+    
+    parameters = {"estimator__penalty" : ["l2"], "estimator__C": [0.001, 0.01, 0.1, 1, 10, 100]}
+    lf_classifer = GridSearchCV(lf_classifer, param_grid=parameters, cv=5, scoring='f1_micro', n_jobs=1, verbose=0, pre_dispatch=1)
+    print("done grid search")
+    
+    lf_classifer.fit(X_train, Y_train)
+    print("done fitting")
+    lf_classifer = lf_classifer.best_estimator_
+    y_test = sparse_tocoo(Y_test)
+    
+    micro, macro, acc, auc = get_classifier_performance(lf_classifer, X_test, y_test, multi_label_binarizer)
+    return micro, macro, acc, auc
+
+
+"""
+Regular node classification
 """
 
 
@@ -63,7 +142,12 @@ def evaluateNodeClassification(X, Y, test_ratio):
     return micro, macro, accuracy, auc
 
 
-def expNC(X, Y, test_ratio_arr, rounds):
+"""
+Code for all
+"""
+
+
+def expNC(X, Y, test_ratio_arr, rounds, multi=False):
     """
     The final node classification task as explained in our git.
     :param X: The features' graph- the embeddings from node2vec
@@ -71,6 +155,7 @@ def expNC(X, Y, test_ratio_arr, rounds):
     :param test_ratio_arr: To determine how to split the data into train and test. This an array
                 with multiple options of how to split.
     :param rounds: How many times we're doing the mission. Scores will be the average
+    :param multi: True for multi-label classification, else False
     :return: Scores for all splits and all splits- F1-micro, F1-macro and accuracy.
     """
     micro = [None] * rounds
@@ -85,7 +170,10 @@ def expNC(X, Y, test_ratio_arr, rounds):
         auc_round = [None] * len(test_ratio_arr)
 
         for i, test_ratio in enumerate(test_ratio_arr):
-            micro_round[i], macro_round[i], acc_round[i], auc_round[i] = evaluateNodeClassification(X, Y, test_ratio)
+            if not multi:
+                micro_round[i], macro_round[i], acc_round[i], auc_round[i] = evaluateNodeClassification(X, Y, test_ratio)
+            else:
+                micro_round[i], macro_round[i], acc_round[i], auc_round[i] = multi_label_logistic_regression(X, Y, test_ratio)
 
         micro[round_id] = micro_round
         macro[round_id] = macro_round
@@ -135,6 +223,8 @@ def read_labels(name, file_tags, dict_proj, mapping=None):
     """
     if name == "Yelp":
         Y, dict_proj = read_yelp_labels(file_tags, mapping, dict_proj)
+    elif name == "Flickr" or name == "Youtube":
+        Y, dict_proj = read_mat_labels(file_tags, dict_proj) 
     else:
         if name == "Reddit":
             f = open(file_tags, 'r')
@@ -146,9 +236,7 @@ def read_labels(name, file_tags, dict_proj, mapping=None):
             f.close()
         else:
             c = np.loadtxt(file_tags).astype(int)
-            if name == "ER-AvgDeg10-1M-L2":
-                labels = {str(x): int(y - 1) for (x, y) in c}
-            elif name == "Pubmed":
+            if name == "Pubmed":
                 labels = {str(x): int(y - 1) for (x, y) in c}
             else:
                 labels = {str(x): int(y) for (x, y) in c}
@@ -184,6 +272,13 @@ def read_yelp_labels(file_tags, mapping, dict_proj):
     for n in range(not_here):
         del dict_proj[mapping[n]]
     return Y, dict_proj
+
+
+def read_mat_labels(file_tags, dict_proj):
+    features_struct = scipy.io.loadmat(file_tags)
+    labels = scipy.sparse.csr_matrix(features_struct["group"])
+    a = scipy.sparse.csr_matrix.toarray(labels)
+    return a, dict_proj
 
 
 def our_embedding_method(dict_proj, dim):
