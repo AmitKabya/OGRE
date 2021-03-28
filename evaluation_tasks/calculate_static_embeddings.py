@@ -16,13 +16,17 @@ Example for weighted graph:
 2 4 0.98
 You can see examples for this format in "datasets" directory.
 
-If you want to peform vertex classification task, you must have labels file:
+If you want to peform vertex classification task or GCN is your initial embedding, you must have labels file:
 "labels/{name_of_dataset}_tags.txt" - A txt file which consists of 2 columns: node, label (no title). Notice all node must have labels!
 Example:
 1 0
 2 0
 3 1
 4 2
+
+Another possibilty is having a .mat file as in NRL_Benchmark (https://pages.github.com/). In this link, go to either `node classification`
+or `link prediction` directories, where a link to datasets you can use in .mat format is avaliable. Then this .mat file is both the
+edges and labels file.
 
 If you want to perform link prediction task, you must have non edges file:
 "evaluation_tasks/non_edges_{name_of_dataset}" - A csv file which consists of two columns: node1, node2 ; where there is no edge between them (again no title).
@@ -69,6 +73,11 @@ import csv
 DATASET = {"name": "DBLP", "initial_size": [100, 1000], "dim": 128, "is_weighted": False, "choose": "degrees",
            "regu_val": 0, "weighted_reg": False, "s_a": True, "epsilon": 0.1,
            "label_file": os.path.join("..", "labels", "dblp_tags.txt")}
+
+# Example for .mat
+# DATASET = {"name": "Flickr", "initial_size": [1000], "dim": 128, "is_weighted": False, "choose": "degrees",
+#            "regu_val": 0, "weighted_reg": False, "s_a": False, "epsilon": 0.01,
+#            "label_file": os.path.join("..", "datasets", "Flickr.mat")}
 
 datasets_path_ = os.path.join("..", "datasets")
 
@@ -124,13 +133,13 @@ print(initial_size)
 n = G.number_of_nodes()
 non_edges_file = "non_edges_{}.csv".format(DATASET["name"])  # non edges file
 # number_true_false: Number of true and false edges, number choose: How many times to choose true and false edges
-params_lp_dict = {"number_true_false": 1000, "rounds": 10, "test_ratio": [0.1, 0.2], "number_choose": 10}
+params_lp_dict = {"number_true_false": 10000, "rounds": 10, "test_ratio": [0.2, 0.3, 0.5], "number_choose": 10}
 dict_lp = final_link_prediction(z, params_lp_dict, non_edges_file)
 export_results_lp_nc_all(n, save, z, dict_lp, DATASET["initial_size"], DATASET["name"], "Link Prediction")
 print("finish link prediction")
 
 # Node Classification Task
-params_nc_dict = {"rounds": 10, "test_ratio": [0.1, 0.2]}
+params_nc_dict = {"rounds": 10, "test_ratio": [0.5, 0.9]}
 dict_nc = final_node_classification(DATASET["name"], z, params_nc_dict, DATASET, mapping=mapping)
 export_results_lp_nc_all(n, save, z, dict_nc, DATASET["initial_size"], DATASET["name"], "Node Classification")
 print("finish node classification")
