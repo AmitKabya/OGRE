@@ -6,12 +6,12 @@ Implementations where taken from GEM package [https://github.com/palash1992/GEM]
 
 import networkx as nx
 import numpy as np
-from time import time
 from node2vec import Node2Vec
 from scipy.sparse import identity
 from scipy.sparse.linalg import inv
 from scipy.sparse.linalg import svds
 import os
+import time
 from gcn.utils import *
 from gcn.models import GCN
 import torch.nn.functional as F
@@ -59,10 +59,10 @@ def train_(epoch, num_of_epochs, model, optimizer, features, labels, adj, idx_tr
     """
     Train function for GCN.
     """
-    t = time()
+    t = time.time()
     model.train()
     optimizer.zero_grad()
-    output = model(features, adj)
+    x, output = model(features, adj)
     loss_train = F.nll_loss(output[idx_train], labels[idx_train])
     acc_train = accuracy(output[idx_train], labels[idx_train])
     loss_train.backward()
@@ -70,10 +70,11 @@ def train_(epoch, num_of_epochs, model, optimizer, features, labels, adj, idx_tr
     
     print('Epoch: {:04d}'.format(epoch + 1),
           'loss_train: {:.4f}'.format(loss_train.item()),
-          'acc_train: {:.4f}'.format(acc_train.item()), 'time: {:.4f}s'.format(time() - t))
+          'acc_train: {:.4f}'.format(acc_train.item()), 'time: {:.4f}s'.format(time.time() - t))
 
     if epoch == num_of_epochs - 1:
-        return output
+        return output  # layer after softmax
+        #return x  # layer before softmax
     
 class GCNModel(StaticGraphEmbedding):
     def __init__(self, name, params, method_name, graph, file_tags):
@@ -141,7 +142,7 @@ class GraphFactorization(StaticGraphEmbedding):
         """
         Apply graph factorization embedding
         """
-        t1 = time()
+        t1 = time.time()
         node_num = len(list(self._graph.nodes()))
         self._X = 0.01 * np.random.randn(node_num, self._d)
         for iter_id in range(self._max_iter):
@@ -164,7 +165,7 @@ class GraphFactorization(StaticGraphEmbedding):
                 self._X[int(i), :] -= self._eta * delPhi
             if count > 30:
                 break
-        t2 = time()
+        t2 = time.time()
         projections = {}
         nodes = list(self._graph.nodes())
         new_nodes = list(H.nodes())
@@ -290,33 +291,32 @@ def final(name, G, method_name, params, file_tags=None):
     :return: Embedding matrix, embedding dict and running time
     """
     if method_name == "HOPE":
-        t = time()
+        t = time.time()
         embedding = HOPE(params, method_name, G)
         projections, S, _, X1, X2 = embedding.learn_embedding()
         X = embedding.get_embedding()
-        elapsed_time = time() - t
+        elapsed_time = time.time() - t
         return X, projections, elapsed_time
     elif method_name == "node2vec":
-        t = time()
+        t = time.time()
         embedding = NODE2VEC(params, method_name, G)
         embedding.learn_embedding()
         X, projections = embedding.get_embedding()
-        elapsed_time = time() - t
+        elapsed_time = time.time() - t
         return X, projections, elapsed_time
     elif method_name == "GF":
-        t = time()
+        t = time.time()
         embedding = GraphFactorization(params, method_name, G)
         _, _, projections = embedding.learn_embedding()
         X = embedding.get_embedding()
-        elapsed_time = time() - t
+        elapsed_time = time.time() - t
         return X, projections, elapsed_time
     elif method_name == "GCN":
-        t = time()
+        t = time.time()
         embedding = GCNModel(name, params, method_name, G, file_tags)
         projections = embedding.learn_embedding()
-        elapsed_time = time() - t
+        elapsed_time = time.time() - t
         return None, projections, elapsed_time
     else:
         print("Method is not valid. Valid methods are: node2vec, hope, graph_factorization")
         return None, None, None
-
