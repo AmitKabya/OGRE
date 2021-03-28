@@ -24,6 +24,13 @@ def read_yelp_labels(file_tags):
         if np.all((Y[:, k] == 0), axis=0):
             Y = np.delete(Y, k, 1)
     return Y
+    
+
+def read_flickr_labels(file_tags):
+    features_struct = scipy.io.loadmat(file_tags)
+    labels = scipy.sparse.csr_matrix(features_struct["group"])
+    a = scipy.sparse.csr_matrix.toarray(labels)
+    return a
 
 
 def read_labels_nodes(file_tags):
@@ -33,7 +40,12 @@ def read_labels_nodes(file_tags):
 
 
 def new_load_data(sub_G, file_tags, num_of_nodes, features_file=None, name="p"):
-    if name != "Yelp":
+    nodes = list(sub_G.nodes())
+    if name == "Yelp":
+        labels = read_yelp_labels(file_tags)
+    elif name == "Flickr" or name == "Youtube":
+        labels = read_flickr_labels(file_tags)
+    else:
         f = open(file_tags, 'r')
         all_labels = {}
         for line in f:
@@ -41,16 +53,13 @@ def new_load_data(sub_G, file_tags, num_of_nodes, features_file=None, name="p"):
             label = int(line.split(" ")[1].split("\n")[0])
             all_labels.update({name: str(label)})
         f.close()
-    nodes = list(sub_G.nodes())
-    if name != "Yelp":
         labels_d = {}
         for node in nodes:
             labels_d.update({node: all_labels[node]})
         labels = list(labels_d.values())
         labels = np.asarray(labels, dtype=np.dtype(str))
         labels = encode_onehot(labels)
-    else:
-        labels = read_yelp_labels(file_tags)
+        
     if features_file is None:
         features = sp.identity(num_of_nodes, dtype=np.float32)
     else:
