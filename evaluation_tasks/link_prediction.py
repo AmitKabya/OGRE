@@ -1,7 +1,12 @@
+"""
+Link Prediction task for evaluation. Code was mainly taken from [https://github.com/PriyeshV/NRL_Benchmark]
+"""
+
 try: import cPickle as pickle
 except: import pickle
 from numpy import linalg as LA
 from sklearn import model_selection as sk_ms
+from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import f1_score, accuracy_score, roc_auc_score
 from sklearn.multiclass import OneVsRestClassifier as oneVr
 from sklearn.linear_model import LogisticRegression as lr
@@ -50,7 +55,7 @@ def calculate_classifier_value(dict_projections, true_edges, false_edges, K, map
             Y - The edges labels, 0 for true, 1 for false
     """
     X = np.zeros(shape=(2 * K, 1))
-    Y = np.zeros(shape=(2 * K, 2))
+    Y = np.zeros(shape=(2 * K, 1))
     count = 0
     node = list(dict_projections.keys())[0]
     a = False if isinstance(node, str) is True else True
@@ -75,52 +80,26 @@ def calculate_classifier_value(dict_projections, true_edges, false_edges, K, map
         embd2 = dict_projections[edge[1]]
         norm = LA.norm(embd1 - embd2, 2)
         X[count, 0] = norm
-        Y[count, 1] = int(1)
+        Y[count, 0] = int(0)
         count += 1
-    return X, Y
+    return X, Y.ravel()
 
 
-class TopKRanker(oneVr):
-    """
-    Linear regression with one-vs-rest classifier
-    """
-    def predict(self, X, top_k_list):
-        assert X.shape[0] == len(top_k_list)
-        probs = np.asarray(super(TopKRanker, self).predict_proba(X))
-        prediction = np.zeros((X.shape[0], self.classes_.shape[0]))
-        for i, k in enumerate(top_k_list):
-            probs_ = probs[i, :]
-            labels = self.classes_[probs_.argsort()[-int(k):]].tolist()
-            for label in labels:
-                prediction[i, int(label)] = 1
-        return prediction
-
-
-def evaluate_edge_classification(X, Y, test_ratio):
-    """
-    Predictions of nodes' labels.
-    :param X: The features' graph- norm
-    :param Y: The edges labels- 0 for true, 1 for false
-    :param test_ratio: To determine how to split the data into train and test
-    :return: Scores- F1-macro, F1-micro accuracy and auc
-    """
-    X_train, X_test, Y_train, Y_test = sk_ms.train_test_split(
-        X,
-        Y,
-        test_size=test_ratio
-    )
-    try:
-        top_k_list = list(Y_test.toarray().sum(axis=1))
-    except:
-        top_k_list = list(Y_test.sum(axis=1))
-    classif2 = TopKRanker(lr(solver='lbfgs'))
-    classif2.fit(X_train, Y_train)
-    prediction = classif2.predict(X_test, top_k_list)
-    accuracy = accuracy_score(Y_test, prediction)
-    micro = f1_score(Y_test, prediction, average='micro')
-    macro = f1_score(Y_test, prediction, average='macro')
-    auc = roc_auc_score(Y_test, prediction)
-    return micro, macro, accuracy, auc
+def create_model(X, Y, test_ratio):
+    X_train, X_test, Y_train, Y_test = sk_ms.train_test_split(X, Y, test_size=test_ratio)
+    model = lr()
+    parameters = {"penalty":["l2"],"C":[0.01,0.1,1]}
+    model = GridSearchCV(model, param_grid=parameters, cv=2, scoring='roc_auc', n_jobs=28, verbose=0,pre_dispatch='n_jobs')
+    model.fit(X_train, Y_train)
+    train_prob_preds = model.predict_proba(X_train)[:,1]
+    test_prob_preds = model.predict_proba(X_test)[:,1]
+    del model
+    train_auc = roc_auc_score(Y_train, train_prob_preds)
+    test_auc = roc_auc_score(Y_test, test_prob_preds)
+    micro = 0
+    macro = 0 
+    accuracy = 0
+    return micro, macro, accuracy, test_auc
 
 
 def exp_lp(X, Y, test_ratio_arr, rounds):
@@ -145,7 +124,7 @@ def exp_lp(X, Y, test_ratio_arr, rounds):
         auc_round = [None] * len(test_ratio_arr)
 
         for i, test_ratio in enumerate(test_ratio_arr):
-            micro_round[i], macro_round[i], acc_round[i], auc_round[i] = evaluate_edge_classification(X, Y, test_ratio)
+            micro_round[i], macro_round[i], acc_round[i], auc_round[i] = create_model(X, Y, test_ratio)
 
         micro[round_id] = micro_round
         macro[round_id] = macro_round
@@ -297,5 +276,3 @@ def final_link_prediction(dict_all_embeddings, params_lp, file, mapping=None):
         dict_lp_mission.update({key: dict_initial})
 
     return dict_lp_mission
-
-
