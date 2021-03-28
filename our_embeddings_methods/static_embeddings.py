@@ -39,6 +39,7 @@ class StaticEmbeddings:
         self.name = name
         # The graph which needs to be embed. If you have a different format change to your own loader.
         self.graph = G
+        self.epsilon = epsilon
         self.initial_method = initial_method
         self.embedding_method = method
         if H is None:
@@ -57,6 +58,14 @@ class StaticEmbeddings:
         self.choose = choose
         # calculate the given graph embedding and return a dictionary of nodes as keys and embedding vectors as values,
         self.list_dicts_embedding, self.times, self.list_initial_proj_nodes = self.calculate_embedding(regu_val, weighted_reg, epsilon, file_tags, H)
+        #self.list_dicts_embedding = []
+        #names = []
+        #for i in self.initial_size:
+        #    names.append("{} + {} + {} + {} + {}".format(name, initial_method, method, str(i), self.epsilon))
+            #names.append("{} + {} + {} + {}".format(name, initial_method, method, str(i)))
+        #for j in names:
+         #   d = load_embedding(os.path.join("..", "embeddings_degrees"), j)
+          #  self.list_dicts_embedding.append(d)
         
     def define_params_for_initial_method(self):
         """
@@ -65,7 +74,7 @@ class StaticEmbeddings:
         """
         if self.initial_method == "node2vec":
             params_dict = {"dimension": self.dim, "walk_length": 80, "num_walks": 16, "workers": 2}
-        elif self.initial_method == "gf":
+        elif self.initial_method == "GF":
             params_dict ={"dimension": self.dim, "eta": 0.1, "regularization": 0.1, "max_iter": 3000, "print_step": 100}
         elif self.initial_method == "HOPE":
             params_dict = {"dimension": self.dim, "beta": 0.1}
@@ -98,7 +107,7 @@ class StaticEmbeddings:
         for j in range(len(self.list_dicts_embedding)):
             dict_embedding = self.list_dicts_embedding[j]
             file_name = self.name + " + " + self.initial_method + " + " + self.embedding_method + " + " \
-                        + str(self.initial_size[j])
+                        + str(self.initial_size[j]) + " + " + str(self.epsilon)
             np.save(os.path.join(path, '{}.npy'.format(file_name)), dict_embedding)
 
 
