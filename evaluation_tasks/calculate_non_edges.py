@@ -16,6 +16,8 @@ name2 = "Cora"
 name3 = "Pubmed"
 name4 = "Yelp"
 name5 = "Reddit"
+name6 = "Youtube"
+name7 = "Flickr"
 
 names = [name1]
 
