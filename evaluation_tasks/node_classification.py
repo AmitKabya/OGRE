@@ -295,7 +295,7 @@ def our_embedding_method(dict_proj, dim):
     return X
 
 
-def nc_mission(name, key, z, ratio_arr, label_file, dim, rounds, mapping=None):
+def nc_mission(name, key, z, ratio_arr, label_file, dim, rounds, mapping=None, multi=False):
     """
     Node Classification Task where one wants the scores as a function of size of the initial embedding. Notice test
     ratio must be fixed. The variable that changes here is the size of the initial embedding. For more  explanation,
@@ -306,6 +306,7 @@ def nc_mission(name, key, z, ratio_arr, label_file, dim, rounds, mapping=None):
     :param label_file: File with labels of the graph. For true format see "results_all_datasets.py" file.
     :param dim: Dimension of the embedding space
     :param rounds: How many time to repeat the task for evaluation
+    :param multi: True for multi-label classification, else False
     :return: Scores of node classification task for each dataset- Micro-F1, Macro-F1, Accuracy and AUC. They return as
             lists for each size of initial embedding for each method
     """
@@ -322,7 +323,7 @@ def nc_mission(name, key, z, ratio_arr, label_file, dim, rounds, mapping=None):
         for j in range(len(list_dict_projections)):
             Y, dict_proj = read_labels(name, label_file, list_dict_projections[j], mapping)
             X = our_embedding_method(dict_proj, dim)
-            micro, macro, acc, auc = expNC(X, Y, [r], rounds)
+            micro, macro, acc, auc = expNC(X, Y, [r], rounds, multi=multi)
             avg_micro, avg_macro, avg_acc, avg_auc = calculate_all_avg_scores_for_all(micro, macro, acc, auc, rounds)
             print(avg_micro)
             print(avg_macro)
@@ -336,11 +337,12 @@ def nc_mission(name, key, z, ratio_arr, label_file, dim, rounds, mapping=None):
     return dict_initial
 
 
-def final_node_classification(name, dict_all_embeddings, params_nc, dict_dataset, mapping=None):
+def final_node_classification(name, dict_all_embeddings, params_nc, dict_dataset, mapping=None, multi=False):
     """
     Node Classification Task
     :param dict_all_embeddings: Dictionary with all dict embeddings for all applied embedding method
     :param params_nc: Parameters for node classification task
+    :param multi: True for multi-label classification, else False
     :return: Dict where keys are applied methods and keys are dicts of scores for each test ratio.
     """
     dict_nc_mission = {}
@@ -353,6 +355,6 @@ def final_node_classification(name, dict_all_embeddings, params_nc, dict_dataset
     for key in keys:
         label_file = dict_dataset["label_file"]
         d = dict_dataset["dim"]
-        dict_initial = nc_mission(name, key, dict_all_embeddings, ratio_arr, label_file, d, rounds, mapping=mapping)
+        dict_initial = nc_mission(name, key, dict_all_embeddings, ratio_arr, label_file, d, rounds, mapping=mapping, multi=multi)
         dict_nc_mission.update({key: dict_initial})
     return dict_nc_mission
