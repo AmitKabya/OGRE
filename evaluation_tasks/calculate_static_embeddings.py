@@ -140,6 +140,7 @@ print("finish link prediction")
 
 # Node Classification Task
 params_nc_dict = {"rounds": 10, "test_ratio": [0.5, 0.9]}
-dict_nc = final_node_classification(DATASET["name"], z, params_nc_dict, DATASET, mapping=mapping)
+# for multi-label node classification add multi=True
+dict_nc = final_node_classification(DATASET["name"], z, params_nc_dict, DATASET, mapping=mapping, multi=False)
 export_results_lp_nc_all(n, save, z, dict_nc, DATASET["initial_size"], DATASET["name"], "Node Classification")
 print("finish node classification")
