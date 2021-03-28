@@ -45,11 +45,15 @@ If this repository is cloned as a pycharm project, one needs to make the followi
 ### Datasets:
 - DBLP
 - Pubmed
-- Cora
 - Yelp
 - Reddit
+- Flickr
+- Youtube
 
-`datasets` directory consists of several small datasets. You can find the larger ones in [This Google Drive link](https://drive.google.com/drive/folders/1zycmmDES39zVlbVCYs88JTJ1Wm5FbfLz), taken from [GraphSaint public github repository](https://github.com/GraphSAINT/GraphSAINT). Notice you will have to adjust them to our files format (will be further explained) or provide a data loader function in order to produce the networkx graph.
+`datasets` directory consists of several small datasets. You can find the larger ones in [This Google Drive link](https://drive.google.com/drive/folders/1zycmmDES39zVlbVCYs88JTJ1Wm5FbfLz), taken from [GraphSaint public github repository](https://github.com/GraphSAINT/GraphSAINT) and from [NRL Benchmark public github repository](https://github.com/PriyeshV/NRL_Benchmark)
+(go to `link prediction` or `node classification` directories, there you will find links to datasets in .mat format).
+
+Notice you will have to adjust them to our files format (will be further explained) or provide a data loader function in order to produce the networkx graph. For .mat files, see how Youtube and Flickr datasets are loaded. You can add the appropriate condition to the function "load_data" in `evaluation_tasks` -> `eval_utils.py`. Note that when having .mat file, it has both the edges and labels. To see an example for a use go to "load_data" in `evaluation_tasks` -> `eval_utils.py` and to `evaluation_tasks` -> `calculate_static_embeddings.py`.
 
 ### What files should you have in order to embed your graph?
 - In order to calculate the embedding, you first must have an edge list file:
