@@ -73,7 +73,7 @@ You can see examples for this format in `datasets` directory.
 
 Note that in the end one must have a networkx graph, so you can change the data loader function as you want (adjusting to your file format), but remember a networkx graph is requierd in the end.
 
-Another format is .mat, as explained above. For example you can see `datasets\Flickr.mat` and see how it is loaded in `evaluation_tasks`->`eval_utils.py`->`load_data`.
+Another format is `.mat`, as explained above. For example you can see `datasets\Flickr.mat` and see how it is loaded in `evaluation_tasks`->`eval_utils.py`->`load_data`.
 - If you want to peform vertex classification task or GCN initial embedding is used, you must provide labels file: <br>
 "labels/name_of_dataset_tags.txt" - A txt file which consists of 2 columns: node, label (no title). Notice all nodes must have labels! <br>
 Example: <br>
@@ -83,7 +83,7 @@ Example: <br>
 4 2 <br>
 You can see examples for this format in `labels` directory.
 
-If your file is in .mat format, you do not need labels file (because it already has labels).
+If your file is in `.mat` format, you do not need labels file (because it already has labels).
 - If you want to perform link prediction task, you must provide non edges file: <br>
 "evaluation_tasks/non_edges_{name_of_dataset}" - A csv file which consists of two columns: node1, node2 ; where there is no edge between them (again no title). <br>
 In order to produce such file, you can go to `evaluation_tasks -> calculate_non_edges.py` , and follow the instructions there.
