@@ -44,13 +44,9 @@ def predict_top_k(classifier, X, top_k_list):
 
 
 def get_classifier_performance(classifer, X_test, y_test, multi_label_binarizer):
+    print("check performance")
     top_k_list_test = [len(l) for l in y_test]
-    y_test_pred_3d = predict_top_k(classifer, X_test, top_k_list_test)
-    
-    y_test_pred = np.zeros(shape=(y_test.shape[0], y_test.shape[1]))
-    for i in y_test_pred.shape[0]:
-        for j in y_test_pred.shape[1]:
-            y_test_pred[i,j] = y_test_pred_3d[j][i][1]
+    y_test_pred = predict_top_k(classifer, X_test, top_k_list_test)
     
     y_test_transformed = multi_label_binarizer.transform(y_test)
     y_test_pred_transformed = multi_label_binarizer.transform(y_test_pred)
@@ -58,9 +54,10 @@ def get_classifier_performance(classifer, X_test, y_test, multi_label_binarizer)
     micro = f1_score(y_test_transformed, y_test_pred_transformed, average="micro")
     macro = f1_score(y_test_transformed, y_test_pred_transformed, average="macro")
     acc = accuracy_score(y_test_transformed, y_test_pred_transformed)
+    print(micro, macro, acc)
 
     return micro, macro, acc, 0
-
+    
 
 def sparse_tocoo(Y):
     temp_y_labels = sparse.csr_matrix(Y)
@@ -77,20 +74,19 @@ def multi_label_logistic_regression(X, Y, test_ratio):
     multi_label_binarizer = MultiLabelBinarizer(range(number_of_labels))
     y_fitted = multi_label_binarizer.fit(Y)
     X_train, X_test, Y_train, Y_test = sk_ms.train_test_split(X, Y, test_size=test_ratio)
-    lf_classifer = oneVr(lr(solver='lbfgs', max_iter=350000))
+    lf_classifer = oneVr(lr(solver='lbfgs', max_iter=1000), n_jobs=60)
     
     parameters = {"estimator__penalty" : ["l2"], "estimator__C": [0.001, 0.01, 0.1, 1, 10, 100]}
     lf_classifer = GridSearchCV(lf_classifer, param_grid=parameters, cv=5, scoring='f1_micro', n_jobs=1, verbose=0, pre_dispatch=1)
+    
     print("done grid search")
     
     lf_classifer.fit(X_train, Y_train)
-    print("done fitting")
     lf_classifer = lf_classifer.best_estimator_
     y_test = sparse_tocoo(Y_test)
     
     micro, macro, acc, auc = get_classifier_performance(lf_classifer, X_test, y_test, multi_label_binarizer)
     return micro, macro, acc, auc
-
 
 """
 Regular node classification
