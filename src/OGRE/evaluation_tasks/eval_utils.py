@@ -107,7 +107,7 @@ def calculate_static_embeddings(datasets_path, embeddings_path, dict_dataset, me
                     X, projections, t = final(name, G, im, params_dict[im], file_tags=file_tags)
                     state_of_the_art_dict.update({im: [X, projections, t]})
                     if save_:
-                        save_embedding_state_of_the_art(os.path.join("..", "embeddings_state_of_the_art"),
+                        save_embedding_state_of_the_art(os.path.join("embeddings_state_of_the_art"),
                                                         projections, name, im)
 
     z = {**my_dict, **state_of_the_art_dict}

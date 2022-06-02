@@ -48,7 +48,10 @@ def get_initial_proj_nodes_by_degrees(G, number):
     initial_nodes = []
     keys = list(x.keys())
     for i in range(number):
-        initial_nodes.append(keys[i])
+        try:
+            initial_nodes.append(keys[i])
+        except IndexError:
+            break
     return initial_nodes
 
 

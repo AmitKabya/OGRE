@@ -66,96 +66,163 @@ Lines 132-136- Vertex classification task: You can see comments in the code. For
 
 from .link_prediction import *
 from .node_classification import *
-# from static_embeddings import *
+import itertools as IT
+from ..our_embeddings_methods.static_embeddings import *
 import csv
 
 
-def static_embedding(name, datasets_path, label_file=None, initial_size=None, dim=128,
-                     is_weighted=False, choose="degrees", regu_val=0,
-                     weighted_reg=False, s_a=True, epsilon=0.1, multi=False,
-                     link_prediction=False, node_classification=False, run_time=False):
+class CalculateStaticEmbeddings:
+    def __init__(self, name, datasets_path, label_file=None, initial_size=None, dim=128,
+                 is_weighted=False, choose="degrees", regu_val=0,
+                 weighted_reg=False, s_a=True, epsilon=0.1):
 
-    if initial_size is None:
-        initial_size = [100, 1000]
+        self.initial_size = None
+        self.save = None
+        self.z = None
+        self.G = None
+        if initial_size is None:
+            initial_size = [100, 1000]
 
-    DATASET = {"name": name, "initial_size": initial_size, "dim": dim,
-               "is_weighted": is_weighted, "choose": choose, "s_a": s_a,
-               "regu_val": regu_val, "weighted_reg": weighted_reg,
-               "epsilon": epsilon, "label_file": label_file}
+        self.DATASET = {"name": name, "initial_size": initial_size, "dim": dim,
+                        "is_weighted": is_weighted, "choose": choose, "s_a": s_a,
+                        "regu_val": regu_val, "weighted_reg": weighted_reg,
+                        "epsilon": epsilon, "label_file": label_file}
 
-    # Example for .mat
-    # DATASET = {"name": "Flickr", "initial_size": [1000], "dim": 128, "is_weighted": False, "choose": "degrees",
-    #            "regu_val": 0, "weighted_reg": False, "s_a": False, "epsilon": 0.01,
-    #            "label_file": os.path.join("..", "datasets", "Flickr.mat")}
+        self.datasets_path = datasets_path
 
-    datasets_path_ = datasets_path
-
-    # where to save the embeddings
-    if DATASET["choose"] == "degrees":
-        embeddings_path_ = os.path.join("..", "embeddings_degrees")
-    else:
-        embeddings_path_ = os.path.join("..", "embeddings_k_core")
-
-    # Our suggested embedding method
-    methods_ = ["OGRE"]
-    # state-of-the-art embedding methods
-    initial_methods_ = ["node2vec"]
-
-    # Parameters duct for state-of-the-art embedding methods
-    params_dict_ = {"node2vec": {"dimension": DATASET["dim"], "walk_length": 80, "num_walks": 16, "workers": 2},
-                    "GF": {"dimension": DATASET["dim"], "eta": 0.1, "regularization": 0.1, "max_iter": 3000,
-                           "print_step": 100}, "HOPE": {"dimension": 128, "beta": 0.1},
-                    "GCN": {"dimension": DATASET["dim"], "epochs": 150, "lr": 0.01, "weight_decay": 5e-4, "hidden": 200,
-                            "dropout": 0}}
-
-    # if you want to save the embeddings as npy file- save_=True
-    save_ = True
-
-    # calculate dict of embeddings
-    z, G, initial_size, list_initial_proj_nodes = calculate_static_embeddings(datasets_path_, embeddings_path_, DATASET,
-                                                                              methods_, initial_methods_, params_dict_,
-                                                                              save_=save_)
-
-    """
-    if the embeddings is all you wanted you can stop here. Otherwise, here are functions to calculate running time, and 
-    applying Link Prediction and Node Classification Tasks.
-    """
-    if run_time or link_prediction or node_classification:
-        # where to save resuts files
-        if DATASET["choose"] == "degrees":
-            save = "files_degrees"
+    def calculate_static_embeddings(self):
+        if self.DATASET["choose"] == "degrees":
+            embeddings_path_ = os.path.join("embeddings_degrees")
         else:
-            save = "files_k_core"
+            embeddings_path_ = os.path.join("embeddings_k_core")
+        if not os.path.exists("embeddings_state_of_the_art"):
+            os.makedirs("embeddings_state_of_the_art")
 
-    if run_time:
+        if self.DATASET["s_a"]:
+            if not os.path.exists(embeddings_path_):
+                os.makedirs(embeddings_path_)
+
+        # Our suggested embedding method
+        methods_ = ["OGRE"]
+        # state-of-the-art embedding methods
+        initial_methods_ = ["node2vec"]
+
+        # Parameters duct for state-of-the-art embedding methods
+        params_dict_ = {
+            "node2vec": {"dimension": self.DATASET["dim"], "walk_length": 80, "num_walks": 16, "workers": 2},
+            "GF": {"dimension": self.DATASET["dim"], "eta": 0.1, "regularization": 0.1, "max_iter": 3000,
+                   "print_step": 100}, "HOPE": {"dimension": 128, "beta": 0.1},
+            "GCN": {"dimension": self.DATASET["dim"], "epochs": 150, "lr": 0.01, "weight_decay": 5e-4,
+                    "hidden": 200,
+                    "dropout": 0}}
+
+        # if you want to save the embeddings as npy file- save_=True
+        save_ = True
+
+        # calculate dict of embeddings
+        self.z, self.G, self.initial_size, list_initial_proj_nodes = \
+            calculate_static_embeddings(self.datasets_path, embeddings_path_, self.DATASET,
+                                        methods_, initial_methods_, params_dict_, save_=save_)
+
+    def __set_save(self):
+        if self.DATASET["choose"] == "degrees":
+            self.save = "files_degrees"
+        else:
+            self.save = "files_k_core"
+        if not os.path.exists(self.save):
+            os.makedirs(self.save)
+
+    def run_time(self):
+        if self.save is None:
+            self.__set_save()
         # evaluate running time
-        export_time(z, DATASET["name"], save)
+        export_time(self.z, self.DATASET["name"], self.save)
 
-    if link_prediction or node_classification:
-        if DATASET["name"] == "Yelp":
-            mapping = {i: n for i, n in zip(range(G.number_of_nodes()), list(G.nodes()))}
+    def __pre_link_node(self):
+        if self.DATASET["name"] == "Yelp":
+            mapping = {i: n for i, n in zip(range(self.G.number_of_nodes()), list(self.G.nodes()))}
         else:
             mapping = None
 
-        DATASET["initial_size"] = initial_size
-        print(initial_size)
-        n = G.number_of_nodes()
+        self.DATASET["initial_size"] = self.initial_size
+        print(self.initial_size)
+        n = self.G.number_of_nodes()
+        return mapping, n
 
-        if link_prediction:
-            # Link prediction Task
-            non_edges_file = "non_edges_{}.csv".format(DATASET["name"])  # non edges file
-            # number_true_false: Number of true and false edges
-            # number_choose: How many times to choose true and false edges
-            params_lp_dict = {"number_true_false": 10000, "rounds": 10,
-                              "test_ratio": [0.2, 0.3, 0.5], "number_choose": 10}
-            dict_lp = final_link_prediction(z, params_lp_dict, non_edges_file)
-            export_results_lp_nc_all(n, save, z, dict_lp, DATASET["initial_size"], DATASET["name"], "Link Prediction")
-            print("finish link prediction")
+    def link_prediction(self, number_true_false=10000, rounds=10, test_ratio=None, number_choose=10):
+        # TODO: figure out what is number_true_false and why the program fails on karate dataset
+        if test_ratio is None:
+            test_ratio = [0.2, 0.3, 0.5]
+        if self.save is None:
+            self.__set_save()
 
-        if node_classification:
-            # Node Classification Task
-            params_nc_dict = {"rounds": 10, "test_ratio": [0.5, 0.9]}
-            # for multi-label node classification add multi=True
-            dict_nc = final_node_classification(DATASET["name"], z, params_nc_dict, DATASET, mapping=mapping, multi=multi)
-            export_results_lp_nc_all(n, save, z, dict_nc, DATASET["initial_size"], DATASET["name"], "Node Classification")
-            print("finish node classification")
+        mapping, n = self.__pre_link_node()
+
+        # evaluate link prediction
+        print("start link prediction task")
+        non_edges_file = "non_edges_{}.csv".format(self.DATASET["name"])  # non edges file
+        if not os.path.exists(non_edges_file):
+            create_non_edges_file(self.G, self.DATASET["name"])
+
+        # number_true_false: Number of true and false edges
+        # number_choose: How many times to choose true and false edges
+        params_lp_dict = {"number_true_false": number_true_false, "rounds": rounds,
+                          "test_ratio": test_ratio, "number_choose": number_choose}
+        dict_lp = final_link_prediction(self.z, params_lp_dict, non_edges_file)
+        export_results_lp_nc_all(n, self.save, self.z, dict_lp, self.DATASET["initial_size"], self.DATASET["name"],
+                                 "Link Prediction")
+        print("finish link prediction")
+
+    def node_classification(self, multi_label=False, label_files=None, rounds=10, test_ratio=None):
+        # TODO: figure out what is label_files and what should this file contain
+        if test_ratio is None:
+            test_ratio = [0.5, 0.9]
+        if self.DATASET["label_file"] is None:
+            if label_files is None:
+                raise ValueError("label_file is None")
+            else:
+                self.DATASET["label_file"] = label_files
+        if self.save is None:
+            self.__set_save()
+
+        mapping, n = self.__pre_link_node()
+
+        # Node Classification Task
+        print("start node classification task")
+        params_nc_dict = {"rounds": rounds, "test_ratio": test_ratio}
+        # for multi-label node classification add multi=True
+        dict_nc = final_node_classification(self.DATASET["name"], self.z, params_nc_dict, self.DATASET, mapping=mapping,
+                                            multi=multi_label)
+        export_results_lp_nc_all(n, self.save, self.z, dict_nc, self.DATASET["initial_size"], self.DATASET["name"],
+                                 "Node Classification")
+        print("finish node classification")
+
+
+def create_non_edges_file(graph, name, path=""):
+    print("First creating non edges file")
+    print("Starting find non edges")
+
+    e = graph.number_of_edges()
+    n = graph.number_of_nodes()
+    l = []
+    print(n, e)
+    nodes = list(graph.nodes())
+    # could be very big so change 0.5 to smaller values if needed.
+    indexes = random.sample(range(0, len(nodes)), int(len(nodes) * 0.5))
+    new_nodes = []
+    for j in indexes:
+        new_nodes.append(nodes[j])
+    missing = [pair for pair in IT.combinations(new_nodes, 2) if not graph.has_edge(*pair)]
+    print(len(missing))
+    for pair in missing:
+        l.append((pair[0], pair[1]))
+
+    print("Almost done, writing the csv file!")
+    non_edges_path = os.path.join(path, f"non_edges_{name}.csv")
+    csvfile = open(non_edges_path, 'w', newline='')
+    obj = csv.writer(csvfile)
+    obj.writerows(l)
+    csvfile.close()
+    print("Non edges file is ready!")
+
+    return non_edges_path

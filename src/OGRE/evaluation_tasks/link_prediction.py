@@ -23,7 +23,7 @@ def choose_true_edges(edges, K):
     :param K: Fixed number of edges to choose
     :return: A list of K true edges
     """
-    indexes = random.sample(range(1, len(edges)), K)
+    indexes = random.sample(list(range(1, len(edges))), K)
     true_edges = []
     for i in indexes:
         true_edges.append(edges[i])
