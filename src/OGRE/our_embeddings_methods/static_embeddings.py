@@ -3,8 +3,8 @@ Our suggested static embedding methods full calculation.
 """
 
 import math
-from OGRE import *
-from D_W_OGRE import main_D_W_OGRE
+from .OGRE import *
+from .D_W_OGRE import main_D_W_OGRE
 import time
 
 
