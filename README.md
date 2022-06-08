@@ -164,22 +164,21 @@ embedding.link_prediction(plot=True)
 6. Perform node classification tasks.
 
 If one wishes to perform node classification task, one can use the function `node_classification()` on the `CalculateStaticEmbeddings` object.<br>
+The function will create a csv file with the node classification and save it in the directory `files_degrees`/`files_k_core`
+(depends on `choose` parameter value) 
 
-[//]: # (The function will create a csv file with the node classification and save it in the directory `files_degrees`/`files_k_core`<br>)
-
-[//]: # (&#40;depends on `choose` parameter value&#41; under the name:<br>)
+[//]: # (under the name:<br>)
 
 [//]: # (`{name_of_dataset} Link Prediction.csv`<br>)
-
-[//]: # (Plots of the link prediction will be saved in the directory `plots` &#40;directory is created if it does not exist&#41; under the name:<br>)
-
-[//]: # (`{dataset_name} Link Prediction {...}.png`<br>)
+Plots of the link prediction will be saved in the directory `plots` (directory is created if it does not exist) 
+under the name:<br>
+`{dataset_name} Link Prediction {...}.png`<br>
 
 ```python
 embedding.node_classification(plot=True)
 ```
 
-##### link_prediction Parameters:
+##### node_classification Parameters:
 - **label_files**:
 - **multi_label**: True if you want to perform a multi-label node classification task, else False. Default is False.
 - **rounds**:
