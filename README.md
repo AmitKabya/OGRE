@@ -171,8 +171,10 @@ The function will create a csv file with the node classification and save it in 
 
 [//]: # (`{name_of_dataset} Link Prediction.csv`<br>)
 Plots of the link prediction will be saved in the directory `plots` (directory is created if it does not exist) 
-under the name:<br>
-`{dataset_name} Link Prediction {...}.png`<br>
+
+[//]: # (under the name:<br>)
+
+[//]: # (`{dataset_name} Link Prediction {...}.png`<br>)
 
 ```python
 embedding.node_classification(plot=True)
