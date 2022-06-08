@@ -112,7 +112,7 @@ def one_iteration(dict_enode_proj, dict_node_enode, dict_node_node, dict_enode_e
 def final_function_OGRE(dict_enode_proj, dict_node_enode, dict_node_node, dict_enode_enode, set_n_e, batch_precent, dim, G, epsilon):
     """
     the final function that iteratively divided the dictionary of nodes without embedding into number of batches
-    determined by batch_precent. It does by building a heap every iteration so that we enter the nodes to the
+    determined by batch_percent. It does by building a heap every iteration so that we enter the nodes to the
     projection from the nodes which have the most neighbors in the embedding to the least. This way the projection
     gets more accurate.
     """

@@ -63,16 +63,19 @@ Lines 123-130- Link prediction task: A csv file of non edges is needed (as expla
 evaluation_tasks -> link_prediction.py .
 Lines 132-136- Vertex classification task: You can see comments in the code. For more details you can go to evaluation_tasks -> node_classification.py .
 """
+import copy
 
 from .link_prediction import *
 from .node_classification import *
+from .calculate_non_edges import calculate_non_edges
 import itertools as IT
 from ..our_embeddings_methods.static_embeddings import *
+from .plot_results import PlotResults
 import csv
 
 
 class CalculateStaticEmbeddings:
-    def __init__(self, name, datasets_path, label_file=None, initial_size=None, dim=128,
+    def __init__(self, name, dataset_path, initial_size=None, dim=128,
                  is_weighted=False, choose="degrees", regu_val=0,
                  weighted_reg=False, s_a=True, epsilon=0.1):
 
@@ -80,17 +83,23 @@ class CalculateStaticEmbeddings:
         self.save = None
         self.z = None
         self.G = None
+        self.methods_ = []
+        self.initial_methods_ = []
         if initial_size is None:
             initial_size = [100, 1000]
 
         self.DATASET = {"name": name, "initial_size": initial_size, "dim": dim,
                         "is_weighted": is_weighted, "choose": choose, "s_a": s_a,
                         "regu_val": regu_val, "weighted_reg": weighted_reg,
-                        "epsilon": epsilon, "label_file": label_file}
+                        "epsilon": epsilon, "label_file": ""}
 
-        self.datasets_path = datasets_path
+        self.dataset_path = dataset_path
 
-    def calculate_static_embeddings(self):
+    def calculate_static_embeddings(self, methods=None, initial_methods=None):
+        if initial_methods is None:
+            initial_methods = ["node2vec"]
+        if methods is None:
+            methods = ["OGRE"]
         if self.DATASET["choose"] == "degrees":
             embeddings_path_ = os.path.join("embeddings_degrees")
         else:
@@ -103,9 +112,13 @@ class CalculateStaticEmbeddings:
                 os.makedirs(embeddings_path_)
 
         # Our suggested embedding method
-        methods_ = ["OGRE"]
+        for method in methods:
+            if method in {"OGRE", "DOGRE", "WOGRE"}:
+                self.methods_.append(method)
         # state-of-the-art embedding methods
-        initial_methods_ = ["node2vec"]
+        for method in initial_methods:
+            if method in {"node2vec", "GF", "HOPE", "GCN"}:
+                self.initial_methods_.append(method)
 
         # Parameters duct for state-of-the-art embedding methods
         params_dict_ = {
@@ -121,8 +134,9 @@ class CalculateStaticEmbeddings:
 
         # calculate dict of embeddings
         self.z, self.G, self.initial_size, list_initial_proj_nodes = \
-            calculate_static_embeddings(self.datasets_path, embeddings_path_, self.DATASET,
-                                        methods_, initial_methods_, params_dict_, save_=save_)
+            calculate_static_embeddings(self.dataset_path, embeddings_path_, self.DATASET,
+                                        self.methods_, self.initial_methods_, params_dict_, save_=save_)
+        return self.z, self.G, self.initial_size, list_initial_proj_nodes
 
     def __set_save(self):
         if self.DATASET["choose"] == "degrees":
@@ -132,11 +146,17 @@ class CalculateStaticEmbeddings:
         if not os.path.exists(self.save):
             os.makedirs(self.save)
 
-    def run_time(self):
+    def run_time(self, plot=False):
         if self.save is None:
             self.__set_save()
         # evaluate running time
         export_time(self.z, self.DATASET["name"], self.save)
+
+        if plot:
+            print("Plotting run time results")
+            plot_results = PlotResults(copy.deepcopy(self.DATASET), self.dataset_path,
+                                       self.methods_, self.initial_methods_)
+            plot_results.plot_run_time()
 
     def __pre_link_node(self):
         if self.DATASET["name"] == "Yelp":
@@ -149,7 +169,9 @@ class CalculateStaticEmbeddings:
         n = self.G.number_of_nodes()
         return mapping, n
 
-    def link_prediction(self, number_true_false=10000, rounds=10, test_ratio=None, number_choose=10):
+    def link_prediction(self, number_true_false=10000, rounds=10,
+                        test_ratio=None, number_choose=10,
+                        path_non_edges=".", non_edges_percentage=1, plot=False):
         # TODO: figure out what is number_true_false and why the program fails on karate dataset
         if test_ratio is None:
             test_ratio = [0.2, 0.3, 0.5]
@@ -160,9 +182,9 @@ class CalculateStaticEmbeddings:
 
         # evaluate link prediction
         print("start link prediction task")
-        non_edges_file = "non_edges_{}.csv".format(self.DATASET["name"])  # non edges file
+        non_edges_file = os.path.join(path_non_edges, f"non_edges_{self.DATASET['name']}.csv")  # non edges file
         if not os.path.exists(non_edges_file):
-            create_non_edges_file(self.G, self.DATASET["name"])
+            calculate_non_edges(self.G, self.DATASET["name"], save_path=path_non_edges, percentage=non_edges_percentage)
 
         # number_true_false: Number of true and false edges
         # number_choose: How many times to choose true and false edges
@@ -173,7 +195,13 @@ class CalculateStaticEmbeddings:
                                  "Link Prediction")
         print("finish link prediction")
 
-    def node_classification(self, multi_label=False, label_files=None, rounds=10, test_ratio=None):
+        if plot:
+            print("Plotting link prediction results")
+            plot_results = PlotResults(copy.deepcopy(self.DATASET), self.dataset_path,
+                                       self.methods_, self.initial_methods_)
+            plot_results.plot_link_prediction(params_lp_dict)
+
+    def node_classification(self, label_files, multi_label=False, rounds=10, test_ratio=None, plot=False):
         # TODO: figure out what is label_files and what should this file contain
         if test_ratio is None:
             test_ratio = [0.5, 0.9]
@@ -197,32 +225,8 @@ class CalculateStaticEmbeddings:
                                  "Node Classification")
         print("finish node classification")
 
-
-def create_non_edges_file(graph, name, path=""):
-    print("First creating non edges file")
-    print("Starting find non edges")
-
-    e = graph.number_of_edges()
-    n = graph.number_of_nodes()
-    l = []
-    print(n, e)
-    nodes = list(graph.nodes())
-    # could be very big so change 0.5 to smaller values if needed.
-    indexes = random.sample(range(0, len(nodes)), int(len(nodes) * 0.5))
-    new_nodes = []
-    for j in indexes:
-        new_nodes.append(nodes[j])
-    missing = [pair for pair in IT.combinations(new_nodes, 2) if not graph.has_edge(*pair)]
-    print(len(missing))
-    for pair in missing:
-        l.append((pair[0], pair[1]))
-
-    print("Almost done, writing the csv file!")
-    non_edges_path = os.path.join(path, f"non_edges_{name}.csv")
-    csvfile = open(non_edges_path, 'w', newline='')
-    obj = csv.writer(csvfile)
-    obj.writerows(l)
-    csvfile.close()
-    print("Non edges file is ready!")
-
-    return non_edges_path
+        if plot:
+            print("Plotting nose classification results")
+            plot_results = PlotResults(copy.deepcopy(self.DATASET), self.dataset_path,
+                                       self.methods_, self.initial_methods_)
+            plot_results.plot_node_classification(params_nc_dict)

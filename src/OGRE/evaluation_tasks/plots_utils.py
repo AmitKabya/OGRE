@@ -7,7 +7,6 @@ import matplotlib as mpl
 import os
 import csv
 
-
 # for plots
 mpl.rcParams['xtick.labelsize'] = 12
 mpl.rcParams['ytick.labelsize'] = 12
@@ -25,7 +24,7 @@ def read_results(name, save, mission, initial_methods_, ratio, mapping):
     initial_size = []
     for m in initial_methods_:
         dict_times.update({m: {}})
-    with open(os.path.join("..", save, "{} {}.csv".format(name, mission))) as csv_file:
+    with open(os.path.join(save, "{} {}.csv".format(name, mission))) as csv_file:
         csv_reader = csv.reader(csv_file)
         for row in csv_reader:
             try:
@@ -182,7 +181,8 @@ def all_test_by_one_initial(dict_mission, keys_state_of_the_art_, ratio_arr, num
     return dict_test_score
 
 
-def all_initial_by_one_test(dict_mission, keys_ours_, keys_state_of_the_art_, initial_arr, number_test, ratio_arr, score):
+def all_initial_by_one_test(dict_mission, keys_ours_, keys_state_of_the_art_, initial_arr, number_test, ratio_arr,
+                            score):
     """
     Create a dictionary of scores for each method where there are several sizes of initial embedding and a chosen value
      of test ratio. Only for our methods.
@@ -224,7 +224,7 @@ def all_initial_by_one_test(dict_mission, keys_ours_, keys_state_of_the_art_, in
     return dict_initial_score
 
 
-def plot_test_vs_score(name, task, score, dict_mission, keys_ours , keys_state_of_the_art_, ratio_arr, initial_arr,
+def plot_test_vs_score(name, task, score, dict_mission, keys_ours, keys_state_of_the_art_, ratio_arr, initial_arr,
                        colors, i, save):
     """
     Plot graph of a given score of a given task as a function of test ratio values, for all applied methods.
@@ -233,9 +233,10 @@ def plot_test_vs_score(name, task, score, dict_mission, keys_ours , keys_state_o
     if name == "Yelp" or name == "Reddit":
         keys = keys_ours
     dict_number_initial = choose_max_initial(dict_mission, keys_ours, ratio_arr, initial_arr, score)
-    #dict_scores = all_test_by_one_initial(dict_mission, keys_state_of_the_art_, ratio_arr, number_initial, initial_arr,
-     #                                    score)
-    dict_scores = all_test_by_one_chosen_initial(dict_mission, dict_number_initial, keys_state_of_the_art_, ratio_arr, score)
+    # dict_scores = all_test_by_one_initial(dict_mission, keys_state_of_the_art_, ratio_arr, number_initial, initial_arr,
+    #                                    score)
+    dict_scores = all_test_by_one_chosen_initial(dict_mission, dict_number_initial, keys_state_of_the_art_, ratio_arr,
+                                                 score)
     plt.figure(i, figsize=(7, 6))
     for j in range(len(keys)):
         if "DOGRE" in keys[j]:
@@ -257,7 +258,8 @@ def plot_test_vs_score(name, task, score, dict_mission, keys_ours , keys_state_o
         else:
             marker = 'x'
             linestyle = (0, (3, 5, 1, 5))
-        plt.plot(ratio_arr, dict_scores[keys[j]], marker=marker, linestyle=linestyle, markersize=markersize, color=colors[keys[j]])
+        plt.plot(ratio_arr, dict_scores[keys[j]], marker=marker, linestyle=linestyle, markersize=markersize,
+                 color=colors[keys[j]])
     if task == "Node Classification":
         if score == "AUC":
             bottom = 0
@@ -284,17 +286,19 @@ def plot_test_vs_score(name, task, score, dict_mission, keys_ours , keys_state_o
     plt.xlabel("Test ratio")
     plt.ylabel("{}".format(score))
     plt.tight_layout()
-    plt.savefig(os.path.join("..", save, "{} {} {}.png".format(name, task, score)))
+    plt.savefig(os.path.join(save, "{} {} {}.png".format(name, task, score)))
 
 
-def plot_initial_vs_score(name, task, score, dict_mission, keys_ours_, keys_state_of_the_art_, initial_arr, number_test, ratio_arr, n,
-                       colors, i, save):
+def plot_initial_vs_score(name, task, score, dict_mission, keys_ours_, keys_state_of_the_art_, initial_arr, number_test,
+                          ratio_arr, n,
+                          colors, i, save):
     """
     Plot graph of a given score of a given task as a function of sizes of initial embedding, for all applied methods.
     """
     if name == "Yelp" or name == "Reddit":
         keys_state_of_the_art_ = []
-    dict_scores = all_initial_by_one_test(dict_mission, keys_ours_, keys_state_of_the_art_, initial_arr, number_test, ratio_arr,
+    dict_scores = all_initial_by_one_test(dict_mission, keys_ours_, keys_state_of_the_art_, initial_arr, number_test,
+                                          ratio_arr,
                                           score)
     plt.figure(i, figsize=(7, 6))
     for j in range(len(keys_ours_)):
@@ -318,7 +322,8 @@ def plot_initial_vs_score(name, task, score, dict_mission, keys_ours_, keys_stat
             marker = 'x'
             linestyle = (0, (3, 5, 1, 5))
         plt.xscale("log")
-        plt.plot(n, dict_scores[keys_ours_[j]], marker=marker, linestyle=linestyle, markersize=markersize, color=colors[keys_ours_[j]])
+        plt.plot(n, dict_scores[keys_ours_[j]], marker=marker, linestyle=linestyle, markersize=markersize,
+                 color=colors[keys_ours_[j]])
     if task == "Node Classification":
         if score == "AUC":
             bottom = 0
@@ -345,7 +350,7 @@ def plot_initial_vs_score(name, task, score, dict_mission, keys_ours_, keys_stat
     plt.xlabel("Size of initial embedding")
     plt.ylabel("{}".format(score))
     plt.tight_layout()
-    plt.savefig(os.path.join("..", save, "{} {} {} initial.png".format(name, task, score)))
+    plt.savefig(os.path.join(save, "{} {} {} initial.png".format(name, task, score)))
 
 
 def plot_test_vs_score_all(name, task, dict_mission, keys_ours, keys_state_of_the_art_, ratio_arr, initial_arr,
@@ -357,14 +362,16 @@ def plot_test_vs_score_all(name, task, dict_mission, keys_ours, keys_state_of_th
         i += 1
 
 
-def plot_initial_vs_score_all(name, task, dict_mission, keys_ours_, keys_state_of_the_art_, initial_arr, number_test, ratio_arr, n,
-                           colors, i, save):
+def plot_initial_vs_score_all(name, task, dict_mission, keys_ours_, keys_state_of_the_art_, initial_arr, number_test,
+                              ratio_arr, n,
+                              colors, i, save):
     if name == "Yelp" or name == "Reddit":
         del n[-1]
     scores = ["Micro-F1", "Macro-F1", "AUC"]
     for s in scores:
-        plot_initial_vs_score(name, task, s, dict_mission, keys_ours_, keys_state_of_the_art_, initial_arr, number_test, ratio_arr, n,
-                           colors, i, save)
+        plot_initial_vs_score(name, task, s, dict_mission, keys_ours_, keys_state_of_the_art_, initial_arr, number_test,
+                              ratio_arr, n,
+                              colors, i, save)
         i += 1
 
 
@@ -375,7 +382,7 @@ def read_times_file(name, save, initial_methods_, mapping):
     dict_times = {}
     for m in initial_methods_:
         dict_times.update({m: {}})
-    with open(os.path.join("..", save, "{} times_1.csv".format(name))) as csv_file:
+    with open(os.path.join(save, "{} times_1.csv".format(name))) as csv_file:
         csv_reader = csv.reader(csv_file)
         for row in csv_reader:
             if len(row) == 0:
@@ -443,20 +450,22 @@ def plot_running_time_after_run(name, method, dict_times, initial_size, colors, 
             else:
                 marker = 'x'
                 linestyle = (0, (3, 5, 1, 5))
-            plt.loglog(initial_size, times, marker=marker, linestyle=linestyle, markersize=markersize, color=colors[combinations[j]])
+            plt.loglog(initial_size, times, marker=marker, linestyle=linestyle, markersize=markersize,
+                       color=colors[combinations[j]])
     plt.legend(keys, loc='best', ncol=2)
     plt.title("{} Dataset - {}\n Running Time VS Size of Initial Embedding".format(name, method))
     plt.xlabel("Size of initial embedding")
     plt.ylabel("Running time [seconds]")
     plt.tight_layout()
-    plt.savefig(os.path.join("..", "plots", "{} {} running time vs initial.png".format(name, method)))
+    plt.savefig(os.path.join("plots", "{} {} running time vs initial.png".format(name, method)))
 
 
 def plot_running_time_after_run_all(dict_dataset, dict_times, colors, n, i):
     """
     Plot running time for all initial methods
     """
-    initial = dict_dataset["initial_embedding_size"]
+    # initial = dict_dataset["initial_embedding_size"]
+    initial = dict_dataset["initial_size"]
     name = dict_dataset["name"]
     if name != "Yelp":
         if name != "Reddit":
